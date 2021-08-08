@@ -1,54 +1,137 @@
-import React,{useState} from 'react';//to container vaiable
-import "./style.css";
+import React,{useState,useEffect}from "react";
+import './style.css';
+import firebase from 'firebase/app';
+import 'firebase/auth';
+import Login from './Login';
+import Forcast from './Forcast';
 
- function App() {
-   const apiKey = '3c65aed1976bfc700bf3f69ba8c98cc9'
+var firebaseConfig = {
+  apiKey: "AIzaSyDKCrAYkt5memrE_8HM-9w2CkwvBiCVL2c",
+    authDomain: "malehu-91d2e.firebaseapp.com",
+    projectId: "malehu-91d2e",
+    storageBucket: "malehu-91d2e.appspot.com",
+    messagingSenderId: "1048738124730",
+    appId: "1:1048738124730:web:99c4a0f033567fcf030383"
+};
+ firebase = firebase.initializeApp(firebaseConfig);
 
-   //state variable to store data
-   const [weatherData,setWeatherData]= useState([{}])
-   const [city,setCity]=useState("")
-//get weather function
-   const getWeather=(event)=>{
-     if (event.apiKey == "Enter"){
-       fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&units=imperial$APPID=${apiKey}`).then(
-       response => response.json()
-       ).then(
-         data =>{
-           setWeatherData(data)
-          setCity("")
-         }
-       )
-     }
-   }
-  return (
-    <div className ="container">
-      <input
-       className="input"
-        placeholder="Enter city..."
-        onChange={e => setCity(e.target.value)}//it set value to the city variable
-        value={city}
-        onKeyPress={getWeather}//call get weather function
-        />
-        {/*display weather */}
-     {typeof weatherData.main == 'undifined' ? (
-       <div>
-         <p>Welcome to weather app!Enter in a city to get the weather of.</p>
-       </div>
-     ):(
-       <div className="weather-data">
-        <p className="city">{weatherData.name}</p>
-         <p className="temp">{Math.round(weatherData.main?.temp())}°F</p>
-     <p className="weather">{weatherData.main}</p>
-         </div>
-     )}
-     {weatherData.cod == "404" ? (
-       <p>City not found</p>
-     ):(
-       <>
-       </>
-     )}
+const App = () =>{
+  const [user,setUser]=useState('');
+  const [email,setEmail]=useState('');
+  const [password,setPassword]=useState('');
+  const [emailError,setEmailError]=useState('');
+  const [passwordError,setPasswordError]=useState('');
+  const [hasAcoount,setHasAccount]=useState(false);
+
+  const clearInputs = () => {
+    setEmail('');
+    setPassword('');
+
+  }
+  const clearErrors = () =>{
+    setEmailError('');
+    setPasswordError('');
+  }
+
+  const handleLogin = () =>{
+    clearErrors('');
+    firebase
+    .auth()
+    .signInWithEmailAndPassword(email,password)
+    .catch(err => {
+      switch(err.code){
+        case "auth/invalid-email":
+        case "auth/user-disabled":
+        case "auth/user-not-found":
+        setEmailError(err.message);
+        break;
+        case "auth/wrong-password":
+        setPasswordError(err.message);
+        break;
+      }
+
+    });
+  };
+  const handleSingup = ()=> {
+    clearErrors();
+    firebase
+    .auth()
+    .createUserWithEmailAndPassword(email,password)
+    .catch(err => {
+      switch(err.code){
+        case "auth/email-already-in-use":
+        case "auth/invalid-email":
+        
+        setEmailError(err.message);
+        break;
+        case "auth/weak-password":
+        setPasswordError(err.message);
+        break;
+      }
+
+    });
+  };
+
+  const handleLogout = () => {
+    firebase.auth().signOut();
+  };
+  const authListener = () =>{
+    firebase.auth().onAuthStateChanged((user) =>{
+      if(user){
+        clearInputs();
+        setUser(user);
+       } else {
+      setUser("");
+      }
+    });
+  };
+  useEffect(() => {
+    authListener();
+
+  },[]);
+  return(
+    <div>
+      {user ?(
+        <Forcast handleLogout={handleLogout}/>
+      ):(
+        <Login
+email={email}
+setEmail={setEmail}
+password={password}
+setPassword={setPassword}
+handleLogin={handleLogin}
+handleSingup={handleSingup}
+hasAcoount={hasAcoount}
+setHasAccount={setHasAccount}
+emailError={emailError}
+passwordError={passwordError}
+
+/>
+
+      )}
+
     </div>
-  )
-}
 
-export default App
+  );
+};
+
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+////////////////
