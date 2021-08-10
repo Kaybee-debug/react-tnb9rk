@@ -1,9 +1,9 @@
 import React,{useState,useEffect}from "react";
-import './style.css';
+import './App.css';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import Login from './Login';
-import Forcast from './Forcast';
+import Weather from './Weather';
 
 var firebaseConfig = {
   apiKey: "AIzaSyDKCrAYkt5memrE_8HM-9w2CkwvBiCVL2c",
@@ -92,7 +92,7 @@ const App = () =>{
   return(
     <div>
       {user ?(
-        <Forcast handleLogout={handleLogout}/>
+        <Weather handleLogout={handleLogout}/>
       ):(
         <Login
 email={email}
